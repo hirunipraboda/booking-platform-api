@@ -1,12 +1,14 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Not, Repository } from 'typeorm';
 import { ServicesService } from '../services/services.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { FindBookingsQueryDto } from './dto/find-bookings-query.dto';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
 import { Booking } from './entities/booking.entity';
 import { BookingStatus } from './enums/booking-status.enum';
@@ -22,7 +24,6 @@ export class BookingsService {
   // ─── Business Rule Helpers ────────────────────────────────────────────────
 
   private isDateInPast(dateStr: string): boolean {
-    // Compare date strings at day granularity (YYYY-MM-DD)
     const today = new Date().toISOString().split('T')[0];
     return dateStr < today;
   }
@@ -30,12 +31,23 @@ export class BookingsService {
   // ─── CRUD Operations ─────────────────────────────────────────────────────
 
   async create(dto: CreateBookingDto): Promise<Booking> {
-    // Rule 1: Service must exist
-    await this.servicesService.findOne(dto.serviceId); // throws 404 if not found
+    await this.servicesService.findOne(dto.serviceId);
 
-    // Rule 2: Booking date cannot be in the past
     if (this.isDateInPast(dto.bookingDate)) {
       throw new BadRequestException('Booking date cannot be in the past');
+    }
+
+    const duplicate = await this.bookingRepository.findOne({
+      where: {
+        serviceId: dto.serviceId,
+        bookingDate: dto.bookingDate,
+        bookingTime: dto.bookingTime,
+        status: Not(BookingStatus.CANCELLED),
+      },
+    });
+
+    if (duplicate) {
+      throw new ConflictException('A booking already exists for this service at the requested date and time');
     }
 
     const booking = this.bookingRepository.create({
@@ -46,10 +58,37 @@ export class BookingsService {
     return this.bookingRepository.save(booking);
   }
 
-  async findAll(): Promise<Booking[]> {
-    return this.bookingRepository.find({
-      order: { createdAt: 'DESC' },
-    });
+  async findAll(queryDto: FindBookingsQueryDto) {
+    const { page = 1, limit = 10, search, status } = queryDto;
+    const query = this.bookingRepository.createQueryBuilder('booking')
+      .leftJoinAndSelect('booking.service', 'service')
+      .orderBy('booking.createdAt', 'DESC');
+
+    if (status) {
+      query.andWhere('booking.status = :status', { status });
+    }
+
+    if (search) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('booking.customerName ILIKE :search', { search: `%${search}%` })
+            .orWhere('booking.customerEmail ILIKE :search', { search: `%${search}%` })
+            .orWhere('booking.customerPhone ILIKE :search', { search: `%${search}%` });
+        }),
+      );
+    }
+
+    const [data, total] = await query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return {
+      data,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit) || 1,
+    };
   }
 
   async findOne(id: string): Promise<Booking> {
@@ -63,7 +102,6 @@ export class BookingsService {
   async updateStatus(id: string, dto: UpdateBookingStatusDto): Promise<Booking> {
     const booking = await this.findOne(id);
 
-    // Rule 3: Cancelled bookings cannot be marked as completed
     if (
       booking.status === BookingStatus.CANCELLED &&
       dto.status === BookingStatus.COMPLETED

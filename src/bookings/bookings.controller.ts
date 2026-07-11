@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -21,6 +22,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { FindBookingsQueryDto } from './dto/find-bookings-query.dto';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
 import { Booking } from './entities/booking.entity';
 
@@ -57,12 +59,12 @@ export class BookingsController {
   @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Get all bookings',
-    description: 'Returns all bookings ordered by creation date descending. Auth required.',
+    description: 'Returns all bookings with pagination, search, and filtering. Auth required.',
   })
-  @ApiResponse({ status: 200, description: 'List of bookings', type: [Booking] })
+  @ApiResponse({ status: 200, description: 'Paginated list of bookings' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findAll() {
-    return this.bookingsService.findAll();
+  findAll(@Query() query: FindBookingsQueryDto) {
+    return this.bookingsService.findAll(query);
   }
 
   @Get(':id')
