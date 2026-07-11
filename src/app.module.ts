@@ -27,7 +27,7 @@ import { UsersModule } from './users/users.module';
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, // auto-create tables in dev; use migrations in production
+        synchronize: false, // Turn off in production, use TypeORM migrations
       }),
     }),
 

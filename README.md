@@ -1,102 +1,117 @@
-<<<<<<< HEAD
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# EN2H Booking Platform REST API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Project Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Welcome to the EN2H Booking Platform API! This project is a robust, clean REST API built with NestJS, designed for managing bookable services and customer bookings. 
 
-## Description
+It implements essential backend functionality, including JWT-based authentication, complete CRUD operations for services and bookings, role-based access restrictions (where customers can book publicly and admins/staff can manage services), alongside several bonus features to ensure a production-ready approach out of the box.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Bonus Features Implemented
+- **Advanced Querying**: Search, Filter by status, and Pagination on `GET /bookings`.
+- **Validation**: Global `ValidationPipe` with `class-validator` stripping un-whitelisted data.
+- **Duplicate Prevention**: Rejects identical bookings for the same service at the exact same date & time.
+- **Global Error Handling**: Comprehensive catching of unhandled errors via `HttpExceptionFilter` and `AllExceptionsFilter`.
+- **Refresh Tokens**: Users receive an `accessToken` (15m) and `refreshToken` (7d), allowing persistent, secure sessions via POST `/auth/refresh`.
+- **Docker Support**: Included `Dockerfile` and `docker-compose.yml` for instant, containerized environments alongside PostgreSQL.
+- **API Documentation**: Fully documented via deeply integrated Swagger UI.
+- **Unit Testing**: Included basic spec testing ensuring business logic robustness.
 
-## Project setup
+---
 
-```bash
-$ npm install
+## Installation Steps
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/hirunipraboda/booking-platform-api.git
+   cd booking-platform-api
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+---
+
+## Environment Variables
+
+Check the `.env.example` file provided in the repo. Create a `.env` file in the root based on this:
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=your_password
+DB_DATABASE=en2h_booking
+
+JWT_SECRET=your_jwt_secret_key
+JWT_REFRESH_SECRET=your_jwt_refresh_secret_key
+PORT=3000
 ```
 
-## Compile and run the project
+---
 
+## Database Setup
+
+1. Make sure you have PostgreSQL running locally (or run it via Docker Compose).
+2. Ensure you have created a database matching your `.env` configuration (e.g., `en2h_booking`).
+
+---
+
+## Running Migrations
+
+Database tables are managed using TypeORM migrations. To generate or run them:
+
+- **Run current migrations**:
+  ```bash
+  npm run migration:run
+  ```
+- **Revert the last migration**:
+  ```bash
+  npm run migration:revert
+  ```
+- **Generate a new migration** (after changing an entity):
+  ```bash
+  npm run migration:generate src/migrations/YourMigrationName
+  ```
+
+---
+
+## Running the Application
+
+**Option 1: Using Node (Locally)**
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run start:dev
 ```
 
-## Run tests
-
+**Option 2: Using Docker Compose**
+Instantly spin up the database and the API concurrently:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+docker-compose up --build
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## API Documentation
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Swagger is built directly into the application. Once the server is running, navigate to:
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+👉 **[http://localhost:3000/api/docs](http://localhost:3000/api/docs)**
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+This interface will allow you to execute endpoints directly from the browser. 
 
-## Resources
+*(For protected endpoints, hit `POST /auth/login`, copy the `accessToken`, click "Authorize" at the top of the Swagger UI, and paste it in.)*
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Assumptions Made
+1. **Public Bookings**: Customers do not require an active "User Account" to book a service. Customer details (name, email, phone) are stored on the `Booking` entity directly.
+2. **Date Granularity**: Past date constraint is evaluated at "Day" granularity. So booking exactly today for a future time might pass the "date in past" validation (in a stricter implementation, we would compare the combined DateTime with timezone).
+3. **Database Timezones**: `date` and `time` are stored without explicitly dealing with intense daylight savings logic since they map basically to the standard Postgres Types.
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-=======
-# booking-platform-api
->>>>>>> 042a8f48c791999641f4e0d866d976bf4280bf63
+## Future Improvements
+1. **RBAC (Role Based Access Control)**: Restrict service management strictly to users with an "Admin" or "Provider" role.
+2. **Email Notifications**: Implement Amazon SES or Nodemailer to send actual confirmation emails upon successfully creating a booking.
+3. **Improved Timeslot System**: Introduce an "Availability" timetable on the `Service` model, ensuring users can only book slots explicitly designated as open.
