@@ -1,20 +1,35 @@
 # EN2H Booking Platform REST API
 
-## Project Overview
+A highly scalable, robust REST API built with [NestJS](https://nestjs.com/) and [PostgreSQL](https://www.postgresql.org/) for managing bookable services and customer bookings.
 
-Welcome to the EN2H Booking Platform API! This project is a robust, clean REST API built with NestJS, designed for managing bookable services and customer bookings. 
+## 📋 Table of Contents
+- [Project Overview](#project-overview)
+- [Installation Steps](#installation-steps)
+- [Environment Variables](#environment-variables)
+- [Database Setup](#database-setup)
+- [Running Migrations](#running-migrations)
+- [Running the Application](#running-the-application)
+- [API Documentation](#api-documentation)
+- [Assumptions Made](#assumptions-made)
+- [Future Improvements](#future-improvements)
 
-It implements essential backend functionality, including JWT-based authentication, complete CRUD operations for services and bookings, role-based access restrictions (where customers can book publicly and admins/staff can manage services), alongside several bonus features to ensure a production-ready approach out of the box.
+---
 
-### Bonus Features Implemented
-- **Advanced Querying**: Search, Filter by status, and Pagination on `GET /bookings`.
-- **Validation**: Global `ValidationPipe` with `class-validator` stripping un-whitelisted data.
-- **Duplicate Prevention**: Rejects identical bookings for the same service at the exact same date & time.
-- **Global Error Handling**: Comprehensive catching of unhandled errors via `HttpExceptionFilter` and `AllExceptionsFilter`.
-- **Refresh Tokens**: Users receive an `accessToken` (15m) and `refreshToken` (7d), allowing persistent, secure sessions via POST `/auth/refresh`.
+## 🚀 Project Overview
+
+Welcome to the **EN2H Booking Platform API**! This project implements essential backend functionality, including JWT-based authentication, complete CRUD operations for services and bookings, and role-based access restrictions (where customers can book publicly and authenticated users can manage services).
+
+It was designed following strict NestJS best practices, maintaining a clean module-driven folder structure, class-validator DTOs, and global filters for clean error handling.
+
+### 🌟 Bonus Features Implemented
+- **Advanced Querying**: Search (by name, email, phone), Filter by status, and Pagination on `GET /bookings`.
+- **Duplicate Prevention**: Rejects duplicate bookings for the same service at the exact same date & time.
+- **Refresh Tokens**: Users receive an `accessToken` (15m) and `refreshToken` (7d) during login/registration, allowing persistent and secure sessions via `POST /auth/refresh`.
+- **Validation**: Global `ValidationPipe` leveraging `class-validator` to strip un-whitelisted data securely.
+- **Global Error Handling**: Comprehensive catching of unhandled errors via custom `HttpExceptionFilter` and `AllExceptionsFilter`.
 - **Docker Support**: Included `Dockerfile` and `docker-compose.yml` for instant, containerized environments alongside PostgreSQL.
-- **API Documentation**: Fully documented via deeply integrated Swagger UI.
-- **Unit Testing**: Included basic spec testing ensuring business logic robustness.
+- **API Documentation**: Fully documented and testable via a deeply integrated Swagger UI.
+- **Unit Testing**: Included basic spec testing ensuring business logic robustness (run via `npm test`).
 
 ---
 
