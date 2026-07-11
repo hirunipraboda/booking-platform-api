@@ -126,7 +126,4 @@ This interface will allow you to execute endpoints directly from the browser.
 
 ---
 
-## Future Improvements
-1. **RBAC (Role Based Access Control)**: Restrict service management strictly to users with an "Admin" or "Provider" role.
-2. **Email Notifications**: Implement Amazon SES or Nodemailer to send actual confirmation emails upon successfully creating a booking.
-3. **Improved Timeslot System**: Introduce an "Availability" timetable on the `Service` model, ensuring users can only book slots explicitly designated as open.
+
