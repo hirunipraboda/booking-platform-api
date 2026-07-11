@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=user123
+      - DB_DATABASE=en2h_booking
+      - JWT_SECRET=yourSecretKey
+      - PORT=3000
+    depends_on:
+      - db
+    networks:
+      - booking_network
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=user123
+      - POSTGRES_DB=en2h_booking
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - booking_network
+
+networks:
+  booking_network:
+    driver: bridge
+
+volumes:
+  pgdata:

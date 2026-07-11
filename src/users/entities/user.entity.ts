@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -20,6 +21,15 @@ export class User {
   @Column()
   name: string;
 
+  @ApiProperty({ example: true })
+  @Column({ default: true })
+  isActive: boolean;
+
+  @ApiProperty({ required: false })
+  @Column({ nullable: true })
+  refreshToken?: string;
+
+  @ApiProperty({ example: '2026-07-11T16:00:00.000Z' })
   @CreateDateColumn()
   createdAt: Date;
 

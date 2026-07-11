@@ -3,6 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -15,6 +16,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -30,11 +32,12 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const token = this.signToken(user.id, user.email);
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
 
     return {
       message: 'Registration successful',
-      accessToken: token,
+      ...tokens,
       user: {
         id: user.id,
         name: user.name,
@@ -54,11 +57,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = this.signToken(user.id, user.email);
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
 
     return {
       message: 'Login successful',
-      accessToken: token,
+      ...tokens,
       user: {
         id: user.id,
         name: user.name,
@@ -67,8 +71,35 @@ export class AuthService {
     };
   }
 
-  private signToken(userId: string, email: string): string {
+  async refreshTokens(userId: string, email: string) {
+    const tokens = await this.getTokens(userId, email);
+    await this.updateRefreshTokenHash(userId, tokens.refreshToken);
+    return tokens;
+  }
+
+  private async getTokens(userId: string, email: string) {
     const payload: JwtPayload = { sub: userId, email };
-    return this.jwtService.sign(payload);
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: '15m',
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET') || 'fallback-refresh',
+        expiresIn: '7d',
+      }),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  private async updateRefreshTokenHash(userId: string, refreshToken: string) {
+    const hash = await bcrypt.hash(refreshToken, 10);
+    await this.usersService.updateRefreshToken(userId, hash);
   }
 }
+
