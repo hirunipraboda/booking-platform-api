@@ -1,19 +1,17 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { setupSwagger } from './common/swagger/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Global exception filters — order: broad → specific
-  // NestJS applies filters in reverse registration order,
-  // so HttpExceptionFilter (registered last) runs first for HttpExceptions.
+  // Global exception filters — broad first, specific last (NestJS reverses order)
   app.useGlobalFilters(
-    new AllExceptionsFilter(),   // catches unknown / unhandled errors
-    new HttpExceptionFilter(),   // catches all HttpExceptions (4xx / 5xx)
+    new AllExceptionsFilter(),  // catches unknown / unhandled errors
+    new HttpExceptionFilter(),  // catches all HttpExceptions (4xx / 5xx)
   );
 
   // Global validation pipe — strips unknown fields and throws on invalid input
@@ -26,19 +24,11 @@ async function bootstrap() {
   );
 
   // Swagger / OpenAPI documentation
-  const config = new DocumentBuilder()
-    .setTitle('Booking Platform API')
-    .setDescription('REST API for managing services and customer bookings')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  setupSwagger(app);
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`🚀 Application running on: http://localhost:${port}`);
-  console.log(`📚 Swagger docs at: http://localhost:${port}/api/docs`);
+  console.log(`📚 Swagger docs at:        http://localhost:${port}/api/docs`);
 }
 bootstrap();
